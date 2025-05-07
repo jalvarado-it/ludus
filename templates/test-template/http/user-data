@@ -5,21 +5,23 @@
 # https://cloudinit.readthedocs.io/en/latest/
 autoinstall:
   version: 1
-  locale: en_US
+  locale: es_ES
   keyboard:
-  layout: en
-  variant: us
+  layout: es
+  variant: es
   storage:
     layout:
       name: direct
   identity:
-    hostname: ubuntu2404
+    hostname: ubtSrv404
     username: localuser
     password: '$6$9LXz9IdyDI4t0f3W$vjNQR9vQgASKa/Sot10nhQwSlRfd/dIEn.Tk1PT8p5.okR52xdR9EbjgfmHneXyjgH4peU9L8Fg810UZzv5M8/' # mkpasswd -m sha-512 password
-  timezone: America/New_York
+  timezone: America/Mexico_City
   ssh:
     install-server: true
     allow-pw: true
+  package_update: true  
+  package_upgrade: true
   packages:
     - ca-certificates
     - sudo
@@ -28,6 +30,8 @@ autoinstall:
     - acpid
     - dbus
     - ifupdown
+    - curl
+    - wget
   user-data:
     disable_root: false
   late-commands:
