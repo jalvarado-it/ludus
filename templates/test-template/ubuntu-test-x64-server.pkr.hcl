@@ -21,7 +21,7 @@ variable "vm_cpu_cores" {
 
 variable "vm_disk_size" {
   type    = string
-  default = "200G"
+  default = "32G"
 }
 
 variable "vm_memory" {
@@ -31,7 +31,7 @@ variable "vm_memory" {
 
 variable "vm_name" {
   type    = string
-  default = "ubuntu-24.04-x64-server-test-template"
+  default = "ubuntu-test-template"
 }
 
 variable "ssh_password" {
