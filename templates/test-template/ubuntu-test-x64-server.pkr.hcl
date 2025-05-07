@@ -109,6 +109,14 @@ source "proxmox-iso" "ubuntu2404-server" {
     discard           = true
     io_thread         = true
   }
+  disks {
+    disk_size         = "${var.vm_disk_size}"
+    format            = "${var.proxmox_storage_format}"
+    storage_pool      = "${var.proxmox_storage_pool}"
+    type              = "virtio"
+    discard           = true
+    io_thread         = true
+  }
   pool                     = "${var.proxmox_pool}"
   insecure_skip_tls_verify = "${var.proxmox_skip_tls_verify}"
   iso_checksum             = "${var.iso_checksum}"
