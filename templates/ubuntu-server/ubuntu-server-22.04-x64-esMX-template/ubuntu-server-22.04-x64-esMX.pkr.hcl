@@ -1,6 +1,6 @@
 variable "iso_checksum" {
   type    = string
-  default = "sha256:d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d"
+  default = "sha256:9bc6028870aef3f74f4e16b900008179e78b130e6b0b9a140635434a46aa98b0"
 }
 
 # The operating system. Can be wxp, w2k, w2k3, w2k8, wvista, win7, win8, win10, win11, l24 (Linux 2.4), l26 (Linux 2.6+), solaris or other. Defaults to other.
@@ -11,7 +11,7 @@ variable "os" {
 
 variable "iso_url" {
   type    = string
-  default = "https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso"
+  default = "https://releases.ubuntu.com/jammy/ubuntu-22.04.5-live-server-amd64.iso"
 }
 
 variable "vm_cpu_cores" {
@@ -21,7 +21,7 @@ variable "vm_cpu_cores" {
 
 variable "vm_disk_size" {
   type    = string
-  default = "32G"
+  default = "64G"
 }
 
 variable "vm_memory" {
@@ -31,7 +31,7 @@ variable "vm_memory" {
 
 variable "vm_name" {
   type    = string
-  default = "ubuntu-test-template"
+  default = "ubuntu-srv-24.04-x64-esmx-template"
 }
 
 variable "ssh_password" {
@@ -82,10 +82,10 @@ variable "ludus_nat_interface" {
 ####
 
 locals {
-  template_description = "Ubutntu 24.04 Server Test template built ${legacy_isotime("2006-01-02 03:04:05")} username:password => localuser:password"
+  template_description = "Ubutntu 22.04 Server template built ${legacy_isotime("2025-05-08 10:00:00")}, locale: es_MX username:password => localuser:password"
 }
 
-source "proxmox-iso" "ubuntu2404-server" {
+source "proxmox-iso" "ubuntu2204-server" {
   boot_command = [
     "e<down><down><down><end><wait>",
     " autoinstall<wait>",
@@ -101,14 +101,6 @@ source "proxmox-iso" "ubuntu2404-server" {
   cores           = "${var.vm_cpu_cores}"
   cpu_type        = "host"
   scsi_controller = "virtio-scsi-single"
-  disks {
-    disk_size         = "${var.vm_disk_size}"
-    format            = "${var.proxmox_storage_format}"
-    storage_pool      = "${var.proxmox_storage_pool}"
-    type              = "virtio"
-    discard           = true
-    io_thread         = true
-  }
   disks {
     disk_size         = "${var.vm_disk_size}"
     format            = "${var.proxmox_storage_format}"
@@ -142,7 +134,7 @@ source "proxmox-iso" "ubuntu2404-server" {
 }
 
 build {
-  sources = ["source.proxmox-iso.ubuntu2404-server"]
+  sources = ["source.proxmox-iso.ubuntu2204-server"]
 
   provisioner "ansible" {
     playbook_file = "ansible/reset-machine-id.yml"
