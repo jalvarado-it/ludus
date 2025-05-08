@@ -31,7 +31,7 @@ variable "vm_memory" {
 
 variable "vm_name" {
   type    = string
-  default = "ubuntu-srv-24.04-x64-esmx-template"
+  default = "ubuntu-srv-22.04-x64-esmx-template"
 }
 
 variable "ssh_password" {
