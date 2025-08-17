@@ -1,0 +1,165 @@
+#cloud-config
+#
+# Cloud Init user-data config. 
+# Do not alter first line of this file.
+# https://cloudinit.readthedocs.io/en/latest/
+autoinstall:
+
+  # Configuración regional
+  version: 1
+  locale: es_MX.UTF-8
+  keyboard:
+  layout: es
+  variant: es
+
+  # Configuración de red
+  network:
+    network:
+      version: 2
+      ethernets:
+        ens18:
+          dhcp4: true
+          dhcp-identifier: mac
+
+  # Configuración de almacenamiento con LVM (32GB)
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: all
+    config:
+      # Disco principal
+      - type: disk
+        id: disk0
+        match:
+          size: largest
+      
+      # Partición boot
+      - type: partition
+        id: boot-partition
+        device: disk0
+        size: 1024M
+        flag: boot
+      
+      # Partición para LVM
+      - type: partition
+        id: lvm-partition
+        device: disk0
+        size: -1
+        flag: lvm
+      
+      # Grupo de volumen LVM
+      - type: lvm_volgroup
+        id: ubuntu-vg
+        name: ubuntu-vg
+        devices: [lvm-partition]
+      
+      # Volumen lógico root (28GB)
+      - type: lvm_partition
+        id: lvm-root
+        name: root
+        volgroup: ubuntu-vg
+        size: 28G
+      
+      # Volumen lógico swap (2GB)
+      - type: lvm_partition
+        id: lvm-swap
+        name: swap
+        volgroup: ubuntu-vg
+        size: 2G
+      
+      # Formatear boot
+      - type: format
+        id: boot-fs
+        volume: boot-partition
+        fstype: ext4
+        label: boot
+      
+      # Formatear root
+      - type: format
+        id: root-fs
+        volume: lvm-root
+        fstype: ext4
+        label: root
+      
+      # Formatear swap
+      - type: format
+        id: swap-fs
+        volume: lvm-swap
+        fstype: swap
+      
+      # Montar boot
+      - type: mount
+        id: boot-mount
+        device: boot-fs
+        path: /boot
+      
+      # Montar root
+      - type: mount
+        id: root-mount
+        device: root-fs
+        path: /
+      
+      # Activar swap
+      - type: mount
+        id: swap-mount
+        device: swap-fs
+        path: none
+
+  # Configuración de usuario ludus
+  identity:
+    hostname: ubuntu-template
+    username: localuser
+    password: '$6$9LXz9IdyDI4t0f3W$vjNQR9vQgASKa/Sot10nhQwSlRfd/dIEn.Tk1PT8p5.okR52xdR9EbjgfmHneXyjgH4peU9L8Fg810UZzv5M8/' # mkpasswd -m sha-512 password
+  
+  # SSH configuración
+  ssh:
+    install-server: true
+    allow-pw: true
+    #authorized-keys: []
+  
+  # Paquetes base para Ludus
+  package_update: true  
+  package_upgrade: true
+  packages:
+    - openssh-server
+    - qemu-guest-agent
+    - cloud-init
+    - python3
+    - python3-pip
+    - curl
+    - wget
+    - git
+    - vim
+    - htop
+    - net-tools
+    - software-properties-common
+    - apt-transport-https
+    - ca-certificates
+    - gnupg
+    - dbus
+    - acpid
+    - sudo
+    - ifupdown
+    - lsb-release
+    - lvm2
+
+  timezone: America/Mexico_City
+
+  user-data:
+    disable_root: false
+  late-commands:
+    - 'echo PubkeyAcceptedKeyTypes=+ssh-rsa >> /target/etc/ssh/sshd_config'  # Required for packer to connect via SSH. See https://github.com/hashicorp/packer/issues/11733
+    # Configurar usuario localuser con sudo
+    - 'echo "localuser ALL = (root) NOPASSWD: ALL" > /target/etc/sudoers.d/localuser'
+    - chmod 440 /target/etc/sudoers.d/localuser
+    # Habilitar servicios
+    - curtin in-target --target=/target -- systemctl enable ssh
+    - curtin in-target --target=/target -- systemctl enable qemu-guest-agent
+    - curtin in-target --target=/target -- systemctl enable cloud-init
+    - |   # Disable unattended upgrades
+      cat <<EOF | sudo tee /target/etc/apt/apt.conf.d/20auto-upgrades
+        APT::Periodic::Update-Package-Lists "0";
+        APT::Periodic::Download-Upgradeable-Packages "0";
+        APT::Periodic::AutocleanInterval "0";
+        APT::Periodic::Unattended-Upgrade "0";
+      EOF
