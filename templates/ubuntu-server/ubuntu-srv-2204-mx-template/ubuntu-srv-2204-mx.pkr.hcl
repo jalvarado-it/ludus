@@ -142,7 +142,7 @@ source "proxmox-iso" "ubuntu2204-server" {
 }
 
 build {
-  sources = ["source.proxmox-iso.ubuntu2404-server"]
+  sources = ["source.proxmox-iso.ubuntu2204-server"]
 
   # Esperar cloud-init
   provisioner "shell" {
